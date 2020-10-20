@@ -3,9 +3,10 @@ package sessioncache
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type KeyWithProfileARN struct {
@@ -25,9 +26,9 @@ func (k KeyWithProfileARN) Key() string {
 	hasher := md5.New()
 	hasher.Write([]byte(k.Duration.String()))
 	hasher.Write([]byte(k.ProfileARN))
+	hasher.Write([]byte(source))
 
-	enc := json.NewEncoder(hasher)
-	enc.Encode(k.ProfileConf)
+	log.Debugf("Generating key hash for %s from duration: %s and ARN: %s", source, k.Duration.String(), k.ProfileARN)
 
 	return fmt.Sprintf("%s session (%x)", source, hex.EncodeToString(hasher.Sum(nil))[0:10])
 }
